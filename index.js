@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 3000;
 require("dotenv").config();
@@ -35,7 +35,24 @@ async function run() {
 
       //    get all volunteer need posts
       app.get("/all-vol-need-posts", async (req, res) => {
-         const data = await allVolNeedPostCollection.find().toArray();
+         const sort = {};
+         const showAtMost = parseInt(req.query.limit);
+         const sortBy = req.query.sortby;
+         if (sortBy === "dateAscending") sort.deadline = 1;
+         const data = await allVolNeedPostCollection
+            .find()
+            .limit(showAtMost)
+            .sort(sort)
+            .toArray();
+         res.send(data);
+      });
+
+      // get a single volunteer post by id
+      app.get("/vol-need-post/:id", async (req, res) => {
+         const id = req.params.id;
+         const data = await allVolNeedPostCollection.findOne({
+            _id: new ObjectId(id),
+         });
          res.send(data);
       });
    } catch (err) {
