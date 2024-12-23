@@ -29,6 +29,9 @@ async function run() {
       const allVolNeedPostCollection = database.collection(
          "all_volunteer_need_posts"
       );
+      const toBeVolReqCollection = database.collection(
+         "all_to_be_vol_reqquest"
+      );
 
       //    home route
       app.get("/", async (req, res) => res.send("Hallo Bruder!"));
@@ -37,10 +40,12 @@ async function run() {
       app.get("/all-vol-need-posts", async (req, res) => {
          const sort = {};
          const showAtMost = parseInt(req.query.limit);
+         const searchText = req.query.search || "";
+         const query = { post_title: { $regex: searchText, $options: "i" } };
          const sortBy = req.query.sortby;
          if (sortBy === "dateAscending") sort.deadline = 1;
          const data = await allVolNeedPostCollection
-            .find()
+            .find(query)
             .limit(showAtMost)
             .sort(sort)
             .toArray();
@@ -54,6 +59,29 @@ async function run() {
             _id: new ObjectId(id),
          });
          res.send(data);
+      });
+
+      // get --> all to be vol request by user
+      app.get("/to-be-vol-req", async (req, res) => {
+         const data = await toBeVolReqCollection.find().toArray();
+         res.send(data);
+      });
+
+      // post a to be vol req
+      app.post("/to-be-vol-req", async (req, res) => {
+         const reqData = req.body;
+         const result = await toBeVolReqCollection.insertOne(reqData);
+
+         // update volunteer needed number
+         const decreaseVolNeeded = await allVolNeedPostCollection.updateOne(
+            {
+               _id: new ObjectId(reqData.vol_need_post_id),
+            },
+            {
+               $inc: { volunteers_needed: -1 },
+            }
+         );
+         res.send(result);
       });
    } catch (err) {
       console.error(err);
