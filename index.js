@@ -44,27 +44,34 @@ async function run() {
          const query = { post_title: { $regex: searchText, $options: "i" } };
          const sortBy = req.query.sortby;
          if (sortBy === "dateAscending") sort.deadline = 1;
-         const data = await allVolNeedPostCollection
+         const result = await allVolNeedPostCollection
             .find(query)
             .limit(showAtMost)
             .sort(sort)
             .toArray();
-         res.send(data);
+         res.send(result);
+      });
+
+      // post a volunteer need request
+      app.post("/all-vol-need-posts", async (req, res) => {
+         const postData = req.body;
+         const result = await allVolNeedPostCollection.insertOne(postData);
+         res.send(result);
       });
 
       // get a single volunteer post by id
       app.get("/vol-need-post/:id", async (req, res) => {
          const id = req.params.id;
-         const data = await allVolNeedPostCollection.findOne({
+         const result = await allVolNeedPostCollection.findOne({
             _id: new ObjectId(id),
          });
-         res.send(data);
+         res.send(result);
       });
 
       // get --> all to be vol request by user
       app.get("/to-be-vol-req", async (req, res) => {
-         const data = await toBeVolReqCollection.find().toArray();
-         res.send(data);
+         const result = await toBeVolReqCollection.find().toArray();
+         res.send(result);
       });
 
       // post a to be vol req
