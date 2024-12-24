@@ -41,7 +41,7 @@ async function run() {
          const sort = {};
          const showAtMost = parseInt(req.query.limit);
          const searchText = req.query.search;
-         const email = req.query.getAllByEmail;
+         const email = req.query.email;
          let query = {};
          if (searchText)
             query = { post_title: { $regex: searchText, $options: "i" } };
@@ -94,7 +94,19 @@ async function run() {
 
       // get --> all to be vol request by user
       app.get("/to-be-vol-req", async (req, res) => {
-         const result = await toBeVolReqCollection.find().toArray();
+         const email = req.query.email;
+         const result = await toBeVolReqCollection
+            .find({ "req_user.email": email })
+            .toArray();
+         res.send(result);
+      });
+
+      // delete a single request by id
+      app.delete("/to-be-vol-req/:id", async (req, res) => {
+         const id = req.params.id;
+         const result = await toBeVolReqCollection.deleteOne({
+            _id: new ObjectId(id),
+         });
          res.send(result);
       });
 
