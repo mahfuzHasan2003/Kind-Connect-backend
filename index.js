@@ -40,8 +40,12 @@ async function run() {
       app.get("/all-vol-need-posts", async (req, res) => {
          const sort = {};
          const showAtMost = parseInt(req.query.limit);
-         const searchText = req.query.search || "";
-         const query = { post_title: { $regex: searchText, $options: "i" } };
+         const searchText = req.query.search;
+         const email = req.query.getAllByEmail;
+         let query = {};
+         if (searchText)
+            query = { post_title: { $regex: searchText, $options: "i" } };
+         if (email) query = { organizer_email: email };
          const sortBy = req.query.sortby;
          if (sortBy === "dateAscending") sort.deadline = 1;
          const result = await allVolNeedPostCollection
@@ -63,6 +67,26 @@ async function run() {
       app.get("/vol-need-post/:id", async (req, res) => {
          const id = req.params.id;
          const result = await allVolNeedPostCollection.findOne({
+            _id: new ObjectId(id),
+         });
+         res.send(result);
+      });
+
+      //  patch a single volunteer post by id
+      app.patch("/vol-need-post/:id", async (req, res) => {
+         const id = req.params.id;
+         const updatedData = req.body;
+         const result = await allVolNeedPostCollection.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: updatedData }
+         );
+         res.send(result);
+      });
+
+      // delete a single volunteer post by id
+      app.delete("/vol-need-post/:id", async (req, res) => {
+         const id = req.params.id;
+         const result = await allVolNeedPostCollection.deleteOne({
             _id: new ObjectId(id),
          });
          res.send(result);
