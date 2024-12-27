@@ -9,7 +9,11 @@ require("dotenv").config();
 
 app.use(
    cors({
-      origin: "http://localhost:5173",
+      origin: [
+         "http://localhost:5173",
+         "https://kind-connect-a2f7a.web.app",
+         "https://kind-connect-a2f7a.firebaseapp.com",
+      ],
       credentials: true,
       optionsSuccessStatus: 200,
    })
@@ -42,10 +46,10 @@ const verifyToken = (req, res, next) => {
 
 async function run() {
    try {
-      await client.connect();
-      console.log(
-         "Pinged your deployment. You successfully connected to MongoDB!"
-      );
+      // await client.connect();
+      // console.log(
+      //    "Pinged your deployment. You successfully connected to MongoDB!"
+      // );
 
       const database = client.db("kind-connect");
       const allVolNeedPostCollection = database.collection(
@@ -56,7 +60,7 @@ async function run() {
       );
 
       //    home route
-      app.get("/", async (req, res) => res.send("Hallo Bruder!"));
+      app.get("/", async (req, res) => res.send("Hallo Bruder, wie geht's?"));
 
       //    get all volunteer need posts
       app.get("/all-vol-need-posts", async (req, res) => {
